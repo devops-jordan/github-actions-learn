@@ -3,11 +3,14 @@ name: "Hello Actions"
 on:
   push:
     branches:
-      - "main"
+      - main
 jobs:
   hello_world:
     runs-on: ubuntu-18.04
     steps:
-      - name: "Echo the message"
+      - name: Echo the message
         run: |
           echo "Hello wrom actions"
+      - name: Dime la fecha
+        run: date
+      - run: ls -l
