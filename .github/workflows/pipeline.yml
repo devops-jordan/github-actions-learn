@@ -1,3 +1,4 @@
+#? Workflow
 name: Deployment Pipeline
 
 on:
@@ -7,12 +8,15 @@ on:
     branches: [main]
     types: [opened, synchronize]
 
+#? Jobs
 jobs:
   avoid_reduncy:
     name: avoid reduncy using github marketplace
     runs-on: ubuntu-latest
     # runs-on: [self-hosted, linux, ARM32] -> si queremos que se ejecute en nuestra maquina
+    #? Steps
     steps:
+      #? Actions
       - name: Cancel Previous Redundant Builds
         uses: styfle/cancel-workflow-action@0.9.1
         with:

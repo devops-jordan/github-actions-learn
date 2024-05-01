@@ -8,3 +8,4 @@
 
 ## Concepts
 ![Components of Github Actions](image.png)
+[Schedule a workflow to run](image-1.png)
