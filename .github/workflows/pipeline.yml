@@ -15,5 +15,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 'latest'
-      - name: Add a nwe file
-        run: touch data.txt
+      - name: see nodejs version
+        run: node --version
