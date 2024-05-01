@@ -15,5 +15,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 'latest'
-      - name: Install Dependecies
-        run: npm install
+      - name: Add a nwe file
+        run: touch data.txt
