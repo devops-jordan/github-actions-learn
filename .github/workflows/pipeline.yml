@@ -2,11 +2,13 @@
 name: Deployment Pipeline
 
 on:
-  push:
-    branches: [main]
+  # push:
+  #   branches: [main]
   pull_request:
     branches: [main]
     types: [opened, synchronize]
+  schedule:
+    - cron: '*/15 * * * *'
 
 #? Jobs
 jobs:
