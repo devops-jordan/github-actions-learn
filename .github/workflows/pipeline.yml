@@ -1,19 +1,114 @@
-name: Deplyoment pipeline
+name: Deployment Pipeline
 
 on:
-  push: 
-      branches: 
-        - main
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
 
 jobs:
-  deploy: 
-    runs-on: ubuntu-latest
+  avoid_reduncy:
+    name: avoid reduncy using github marketplace
+    runs-on: ubuntu-18.04
+    # runs-on: [self-hosted, linux, ARM32] -> si queremos que se ejecute en nuestra maquina
     steps:
-      - uses: actions/checkout@v4
+      - name: Cancel Previous Redundant Builds
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+
+  lint:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v2
         with:
+          cache: 'npm'
           node-version: 'latest'
-      - name: see nodejs version
-        run: node --version
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run eslint
+
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v2
+        with:
+          cache: 'npm'
+          node-version: 'latest'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: dist
+
+  test:
+    needs: [lint, build]
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v2
+        with:
+          cache: 'npm'
+          node-version: 'latest'
+      - name: Install dependencies
+        run: npm ci
+      - uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+      - name: Test
+        run: npm test
+
+  e2e:
+    needs: [lint, build]
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v2
+        with:
+          cache: 'npm'
+          node-version: 'latest'
+      - name: Install dependencies
+        run: npm ci
+      - uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+      - name: E2E tests
+        uses: cypress-io/github-action@v2
+        with:
+          command: npm run test:e2e
+          start: npm run start-test
+          wait-on: http://localhost:5000
+
+  deploy:
+    needs: [test, e2e]
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Deploy to Heroku
+        if: ${{ github.event_name == 'push' }}
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.HEROKU_APP}}
+          heroku_email: ${{secrets.HEROKU_API_EMAIL}}
+          healthcheck: "https://${{secrets.HEROKU_APP}}.herokuapp.com/health"
+          rollbackonhealthcheckfailed: true

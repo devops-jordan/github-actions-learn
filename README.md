@@ -5,3 +5,6 @@
 - [ ] Create and publish custom GitHub actions(CreateandPublish)
 - [ ] Build and deploy applications to Azure by using GitHub Actions(DeplyoGA)
 - [ ] Manage GitHub Actions in the enterprise(Manage)
+
+## Concepts
+![Components of Github Actions](image.png)
